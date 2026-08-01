@@ -10,8 +10,9 @@ npm install
 NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_PASSWORD=
-KAKAO_REST_API_KEY=      # 카카오 로컬 API (주소검색/지오코딩)
-TMAP_APP_KEY=            # SK Open API (TMAP 경유지 순서 최적화)
+KAKAO_REST_API_KEY=      # 카카오 로컬 API (주소검색/지오코딩) — 서버 전용
+TMAP_APP_KEY=            # SK Open API (TMAP 경유지 순서 최적화) — 서버 전용
+NEXT_PUBLIC_KAKAO_JS_KEY=  # 카카오맵 JS SDK (지도 렌더링) — 브라우저에 노출되는 키, 카카오 디벨로퍼스에서 도메인 등록 필요
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY`, `KAKAO_REST_API_KEY`, `TMAP_APP_KEY`는 서버 전용입니다.
@@ -21,6 +22,7 @@ TMAP_APP_KEY=            # SK Open API (TMAP 경유지 순서 최적화)
 Supabase SQL Editor에서 순서대로 실행:
 1. `sql/001_teams_members.sql`
 2. `sql/002_waypoints_and_shares.sql`
+3. `sql/003_waypoint_label.sql`
 
 ## 4. 기능 요약
 
@@ -40,6 +42,14 @@ Supabase SQL Editor에서 순서대로 실행:
   미리 하고 안내는 한 곳씩 순차적으로 넘기는 방식입니다.)
 - **공유코드**: 내 경유지 목록을 6자리 코드로 발급 → 같은 팀 소속 팀원만 코드로 조회/대체 가능
   (팀이 다르면 "같은 팀 소속만 조회 가능" 오류)
+- **"최적 경로로 출발" 화면**: 기존 사이트 스크린샷과 동일한 구성으로 재현
+  - 상단 지도 미리보기(카카오맵 JS SDK): 출발지(초록) + 경유지 번호 핀(주황, 방문 순서) + 연결선
+    - ⚠️ 이 연결선은 실제 도로를 따라가는 경로가 아니라 지점들을 직선으로 이은 참고용 표시입니다.
+      실제 도로 경로선까지 그리려면 TMAP의 "다중 경유지 안내" API를 별도 연동해야 합니다(현재 미포함).
+  - "경유지 N"이라는 라벨은 **입력한 순번(label_no)**, 리스트/지도의 번호 배지는 **최적화된 방문 순서**로 서로 다를 수 있습니다 (스크린샷과 동일한 방식)
+  - 하단 "티맵으로 순차 안내 시작" 버튼: 문구상 "전체 경로 한번에"처럼 보였던 기존 버튼과 달리,
+    **실제로는 한 곳씩 순차적으로 티맵을 여는 방식**입니다 — 티맵/카카오맵 모두 앱을 한 번에 여러 목적지로
+    여는 공식 방법이 없기 때문입니다 (자세한 내용은 대화 중 조사 결과 참고)
 
 ## 5. 확인/검증이 필요한 부분
 

@@ -28,13 +28,22 @@ export async function addWaypoint(formData: FormData) {
   const supabase = createServerSupabase();
   const { data: existing } = await supabase
     .from("waypoints")
-    .select("order_index")
+    .select("order_index, label_no")
     .eq("member_id", member.id)
     .eq("visit_date", todayStr())
     .order("order_index", { ascending: false })
     .limit(1);
 
   const nextOrder = (existing?.[0]?.order_index ?? -1) + 1;
+
+  const { data: maxLabel } = await supabase
+    .from("waypoints")
+    .select("label_no")
+    .eq("member_id", member.id)
+    .eq("visit_date", todayStr())
+    .order("label_no", { ascending: false })
+    .limit(1);
+  const nextLabel = (maxLabel?.[0]?.label_no ?? 0) + 1;
 
   const { error } = await supabase.from("waypoints").insert({
     member_id: member.id,
@@ -44,6 +53,7 @@ export async function addWaypoint(formData: FormData) {
     lat: geo.lat,
     lng: geo.lng,
     order_index: nextOrder,
+    label_no: nextLabel,
   });
   if (error) throw new Error(error.message);
 
@@ -99,6 +109,7 @@ export async function replaceAllWaypoints(
         lat: w.lat,
         lng: w.lng,
         order_index: idx,
+        label_no: idx + 1,
       }))
     );
     if (insError) throw new Error(insError.message);
@@ -109,13 +120,25 @@ export async function replaceAllWaypoints(
 
 // --- 경로 최적화 ---
 
-export async function optimizeMyRoute(startAddress: string) {
+export type OptimizedStop = {
+  id: string;
+  address: string;
+  lat: number;
+  lng: number;
+  label_no: number;
+  visit_order: number; // 0-based 방문 순서
+};
+
+export async function optimizeMyRoute(startAddress: string): Promise<{
+  start: { name: string; lat: number; lng: number };
+  stops: OptimizedStop[];
+}> {
   const member = await requireMember();
   const supabase = createServerSupabase();
 
   const { data: waypoints, error } = await supabase
     .from("waypoints")
-    .select("id, address, lat, lng")
+    .select("id, address, lat, lng, label_no")
     .eq("member_id", member.id)
     .eq("visit_date", todayStr())
     .eq("completed", false)
@@ -137,13 +160,26 @@ export async function optimizeMyRoute(startAddress: string) {
     })),
   });
 
-  // 계산된 순서를 order_index에 반영
+  const labelById = new Map(waypoints.map((w) => [w.id, w.label_no]));
+
+  // 계산된 순서를 order_index에 반영 (label_no는 그대로 유지)
   for (const [idx, w] of optimized.entries()) {
     await supabase.from("waypoints").update({ order_index: idx }).eq("id", w.id);
   }
 
   revalidatePath("/route");
-  return optimized;
+
+  return {
+    start: { name: "출발지", lat: startGeo.lat, lng: startGeo.lng },
+    stops: optimized.map((w, idx) => ({
+      id: w.id,
+      address: w.name,
+      lat: w.lat,
+      lng: w.lng,
+      label_no: labelById.get(w.id) ?? idx + 1,
+      visit_order: idx,
+    })),
+  };
 }
 
 // --- 공유코드 ---

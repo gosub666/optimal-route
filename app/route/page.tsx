@@ -12,7 +12,7 @@ export default async function RoutePage() {
 
   const { data: waypoints } = await supabase
     .from("waypoints")
-    .select("id, address, lat, lng, order_index, completed")
+    .select("id, address, lat, lng, order_index, completed, label_no")
     .eq("member_id", member.id)
     .eq("visit_date", today)
     .order("order_index", { ascending: true });
