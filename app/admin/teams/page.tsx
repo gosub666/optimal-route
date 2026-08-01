@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { isAdminSession } from "@/lib/session";
 import { createTeam, deleteTeam } from "./actions";
+import { adminLogoutAction } from "../logout-action";
 
 export default async function AdminTeamsPage() {
   const ok = await isAdminSession();
@@ -16,7 +17,12 @@ export default async function AdminTeamsPage() {
 
   return (
     <main className="max-w-xl mx-auto px-6 py-8 space-y-6">
-      <h1 className="text-xl font-bold text-[#185FA5]">팀 관리</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-[#185FA5]">팀 관리</h1>
+        <form action={adminLogoutAction}>
+          <button className="text-sm text-gray-500">로그아웃</button>
+        </form>
+      </div>
 
       <form action={createTeam} className="flex gap-2">
         <input

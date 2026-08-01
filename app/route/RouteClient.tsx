@@ -13,6 +13,7 @@ import {
 } from "./actions";
 import { buildTmapLink, buildKakaoMapLink } from "@/lib/mapLinks";
 import type { CurrentMember } from "@/lib/currentMember";
+import { memberLogoutAction } from "../logout-action";
 
 type Waypoint = {
   id: string;
@@ -160,9 +161,14 @@ export default function RouteClient({
             {member.team_name} · {member.name}
           </p>
         </div>
-        <span className="text-sm text-gray-500">
-          {completedCount} / {waypoints.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">
+            {completedCount} / {waypoints.length}
+          </span>
+          <form action={memberLogoutAction}>
+            <button className="text-xs text-gray-400">로그아웃</button>
+          </form>
+        </div>
       </header>
 
       {error && (

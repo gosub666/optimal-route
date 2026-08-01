@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { isAdminSession } from "@/lib/session";
 import { renameTeam, createMember, updateMember, deleteMember } from "../actions";
+import { adminLogoutAction } from "../../logout-action";
 
 export default async function AdminTeamDetailPage({
   params,
@@ -31,7 +32,12 @@ export default async function AdminTeamDetailPage({
   return (
     <main className="max-w-xl mx-auto px-6 py-8 space-y-8">
       <div>
-        <a href="/admin/teams" className="text-sm text-gray-500">← 팀 목록</a>
+        <div className="flex items-center justify-between">
+          <a href="/admin/teams" className="text-sm text-gray-500">← 팀 목록</a>
+          <form action={adminLogoutAction}>
+            <button className="text-sm text-gray-500">로그아웃</button>
+          </form>
+        </div>
         <form
           action={async (formData) => {
             "use server";
