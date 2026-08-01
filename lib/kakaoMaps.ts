@@ -12,7 +12,7 @@ export function loadKakaoMapsSdk(): Promise<void> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("브라우저 환경이 아닙니다."));
   }
-  if (window.kakao?.maps) {
+  if (window.kakao?.maps?.LatLngBounds) {
     return Promise.resolve();
   }
   if (loadingPromise) {

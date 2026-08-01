@@ -17,5 +17,9 @@ export default async function RoutePage() {
     .eq("visit_date", today)
     .order("order_index", { ascending: true });
 
-  return <RouteClient member={member} initialWaypoints={waypoints ?? []} />;
+  const dedupedWaypoints = Array.from(
+    new Map((waypoints ?? []).map((w) => [w.id, w])).values()
+  );
+
+  return <RouteClient member={member} initialWaypoints={dedupedWaypoints} />;
 }
