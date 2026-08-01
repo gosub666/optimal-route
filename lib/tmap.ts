@@ -27,9 +27,22 @@ export async function optimizeRoute(input: OptimizeInput): Promise<OptimizedWayp
     throw new Error("경유지는 최대 10개까지 한 번에 최적화할 수 있습니다.");
   }
 
+  // 경유지가 1개뿐이면 순서를 계산할 필요가 없으므로 API 호출 없이 바로 반환
+  if (input.waypoints.length === 1) {
+    const only = input.waypoints[0];
+    return [{ ...only, order: 0 }];
+  }
+
   // 마지막 경유지를 목적지(end)로, 나머지를 viaPoints로 사용
   const last = input.waypoints[input.waypoints.length - 1];
   const viaPoints = input.waypoints.slice(0, -1);
+
+  // YYYYMMDDHHmm 형식 (TMAP 샘플 요청에 공통으로 포함되어 있어 필수 파라미터로 취급)
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const startTime = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(
+    now.getDate()
+  )}${pad(now.getHours())}${pad(now.getMinutes())}`;
 
   const body = {
     reqCoordType: "WGS84GEO",
@@ -37,13 +50,14 @@ export async function optimizeRoute(input: OptimizeInput): Promise<OptimizedWayp
     startName: input.start.name,
     startX: String(input.start.lng),
     startY: String(input.start.lat),
+    startTime,
     endName: last.name,
     endX: String(last.lng),
     endY: String(last.lat),
     endPoiId: "",
     searchOption: "0",
     carType: "0",
-    viaPoints: viaPoints.map((v, idx) => ({
+    viaPoints: viaPoints.map((v) => ({
       viaPointId: v.id,
       viaPointName: v.name,
       viaX: String(v.lng),
