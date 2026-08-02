@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import {
   addWaypoint,
   deleteWaypoint,
@@ -13,6 +13,7 @@ import {
 } from "./actions";
 import { buildTmapLink, buildKakaoMapLink } from "@/lib/mapLinks";
 import RoutePreviewMap from "./RoutePreviewMap";
+import { openDaumPostcode } from "@/lib/daumPostcode";
 
 type Waypoint = {
   id: string;
@@ -39,6 +40,7 @@ export default function RouteClient({
 
   const [startAddress, setStartAddress] = useState(initialStartAddress);
   const [startSaved, setStartSaved] = useState(false);
+  const addressInputRef = useRef<HTMLInputElement>(null);
 
   const [routeView, setRouteView] = useState<{
     start: { name: string; lat: number; lng: number };
@@ -113,6 +115,24 @@ export default function RouteClient({
     });
   }
 
+  async function runOpenPostcodeForWaypoint() {
+    try {
+      const result = await openDaumPostcode();
+      if (addressInputRef.current) addressInputRef.current.value = result.address;
+    } catch (e: any) {
+      setError(e.message);
+    }
+  }
+
+  async function runOpenPostcodeForStart() {
+    try {
+      const result = await openDaumPostcode();
+      setStartAddress(result.address);
+    } catch (e: any) {
+      setError(e.message);
+    }
+  }
+
   function runPlanRoute() {
     if (!startAddress.trim()) {
       setError("출발지 주소를 입력해 주세요.");
@@ -168,6 +188,13 @@ export default function RouteClient({
           placeholder="출발지 주소 입력"
           className="flex-1 border rounded-lg px-3 py-2 text-sm"
         />
+        <button
+          type="button"
+          onClick={runOpenPostcodeForStart}
+          className="shrink-0 border border-[#185FA5] text-[#185FA5] rounded-lg px-3 py-2 text-sm"
+        >
+          🔍
+        </button>
         <button
           onClick={runSaveStartAddress}
           disabled={pending}
@@ -341,12 +368,22 @@ export default function RouteClient({
 
         <div className="lg:col-span-2 mt-4 lg:mt-0 space-y-4">
           <form action={runAddWaypoint} className="space-y-2 border rounded-lg p-3">
-            <input
-              name="address"
-              required
-              placeholder="주소 입력 (예: 서울 관악구 관악로14길 106)"
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-            />
+            <div className="flex gap-2">
+              <input
+                ref={addressInputRef}
+                name="address"
+                required
+                placeholder="주소 검색을 이용해 입력해 주세요"
+                className="flex-1 border rounded-lg px-3 py-2 text-sm"
+              />
+              <button
+                type="button"
+                onClick={runOpenPostcodeForWaypoint}
+                className="shrink-0 border border-[#185FA5] text-[#185FA5] rounded-lg px-3 py-2 text-sm"
+              >
+                🔍 주소 검색
+              </button>
+            </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-1">
                 <label className="text-xs text-gray-500">약속시간</label>
