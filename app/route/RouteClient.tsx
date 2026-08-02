@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import {
   addWaypoint,
   deleteWaypoint,
+  resetTodayWaypoints,
   recordVisitResult,
   planMyRoute,
   type VisitResult,
@@ -70,6 +71,22 @@ export default function RouteClient({
     startTransition(async () => {
       try {
         await deleteWaypoint(id);
+        refresh();
+      } catch (e: any) {
+        setError(e.message);
+      }
+    });
+  }
+
+  function runReset() {
+    if (waypoints.length === 0) return;
+    if (!window.confirm("오늘 등록한 경유지를 모두 삭제할까요? 이 작업은 되돌릴 수 없습니다.")) {
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      try {
+        await resetTodayWaypoints();
         refresh();
       } catch (e: any) {
         setError(e.message);
@@ -262,9 +279,18 @@ export default function RouteClient({
     <main className="max-w-6xl mx-auto px-4 py-6 space-y-6 pb-24">
       <header className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-[#185FA5]">경로 계획</h1>
-        <span className="text-sm text-gray-500">
-          {completedCount} / {waypoints.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">
+            {completedCount} / {waypoints.length}
+          </span>
+          <button
+            onClick={runReset}
+            disabled={pending || waypoints.length === 0}
+            className="text-xs text-red-500 disabled:opacity-30"
+          >
+            초기화
+          </button>
+        </div>
       </header>
 
       {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}

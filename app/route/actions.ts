@@ -55,6 +55,14 @@ export async function deleteWaypoint(waypointId: string) {
   revalidatePath("/route");
 }
 
+export async function resetTodayWaypoints() {
+  const supabase = createServerSupabase();
+  const { error } = await supabase.from("waypoints").delete().eq("visit_date", todayStr());
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/route");
+}
+
 export type VisitResult = "completed" | "absent" | "refused";
 
 export async function recordVisitResult(waypointId: string, result: VisitResult) {
