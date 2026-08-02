@@ -286,9 +286,9 @@ export default function RouteClient({
           <button
             onClick={runReset}
             disabled={pending || waypoints.length === 0}
-            className="text-xs text-red-500 disabled:opacity-30"
+            className="text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg px-3 py-1.5 disabled:opacity-30 disabled:hover:bg-red-500"
           >
-            초기화
+            🗑️ 초기화
           </button>
         </div>
       </header>
