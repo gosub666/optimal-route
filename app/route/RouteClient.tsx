@@ -7,6 +7,7 @@ import {
   resetTodayWaypoints,
   recordVisitResult,
   planMyRoute,
+  setStartAddress as saveStartAddressAction,
   type VisitResult,
   type PlannedStopResult,
 } from "./actions";
@@ -37,7 +38,7 @@ export default function RouteClient({
   const [error, setError] = useState<string | null>(null);
 
   const [startAddress, setStartAddress] = useState(initialStartAddress);
-  const [editingStart, setEditingStart] = useState(!initialStartAddress);
+  const [startSaved, setStartSaved] = useState(false);
 
   const [routeView, setRouteView] = useState<{
     start: { name: string; lat: number; lng: number };
@@ -94,10 +95,27 @@ export default function RouteClient({
     });
   }
 
+  function runSaveStartAddress() {
+    if (!startAddress.trim()) {
+      setError("출발지 주소를 입력해 주세요.");
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      try {
+        const geo = await saveStartAddressAction(startAddress.trim());
+        setStartAddress(geo.address);
+        setStartSaved(true);
+        setTimeout(() => setStartSaved(false), 2000);
+      } catch (e: any) {
+        setError(e.message);
+      }
+    });
+  }
+
   function runPlanRoute() {
     if (!startAddress.trim()) {
       setError("출발지 주소를 입력해 주세요.");
-      setEditingStart(true);
       return;
     }
     setError(null);
@@ -140,22 +158,26 @@ export default function RouteClient({
     });
   }
 
-  const startAddressBlock = editingStart ? (
-    <div className="flex gap-2">
-      <input
-        value={startAddress}
-        onChange={(e) => setStartAddress(e.target.value)}
-        placeholder="출발지 주소"
-        className="flex-1 border rounded-lg px-3 py-2 text-sm"
-      />
-      <button onClick={() => setEditingStart(false)} className="text-sm text-[#185FA5]">
-        완료
-      </button>
+  const startAddressBlock = (
+    <div className="border rounded-lg p-3 space-y-1">
+      <label className="text-xs text-gray-500 font-medium">출발지</label>
+      <div className="flex gap-2">
+        <input
+          value={startAddress}
+          onChange={(e) => setStartAddress(e.target.value)}
+          placeholder="출발지 주소 입력"
+          className="flex-1 border rounded-lg px-3 py-2 text-sm"
+        />
+        <button
+          onClick={runSaveStartAddress}
+          disabled={pending}
+          className="bg-[#185FA5] text-white rounded-lg px-4 py-2 text-sm disabled:opacity-50 shrink-0"
+        >
+          저장
+        </button>
+      </div>
+      {startSaved && <p className="text-xs text-green-600">✓ 출발지가 저장됐습니다</p>}
     </div>
-  ) : (
-    <button onClick={() => setEditingStart(true)} className="text-xs text-gray-400 text-left">
-      출발지: {startAddress || "미설정 (탭하여 설정)"}
-    </button>
   );
 
   // ------------------- 경로 안내 화면 -------------------
