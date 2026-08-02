@@ -148,7 +148,7 @@ export default function RouteClient({
     const nextStop = routeView.stops[activeVisitIndex + 1];
 
     return (
-      <main className="max-w-xl mx-auto px-4 py-6 space-y-4 pb-24">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-4 pb-24">
         <header className="flex items-center justify-between">
           <h1 className="text-lg font-bold text-[#185FA5]">
             경로 안내{" "}
@@ -257,7 +257,7 @@ export default function RouteClient({
 
   // ------------------- 경유지 입력 화면 -------------------
   return (
-    <main className="max-w-xl mx-auto px-4 py-6 space-y-6 pb-24">
+    <main className="max-w-6xl mx-auto px-4 py-6 space-y-6 pb-24">
       <header className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-[#185FA5]">경로 계획</h1>
         <span className="text-sm text-gray-500">
@@ -356,7 +356,7 @@ function VisitResultSheet({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-xl p-5 space-y-4">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-6xl p-5 space-y-4">
         <div className="flex items-start justify-between">
           <div>
             <p className="font-bold">방문 결과</p>
