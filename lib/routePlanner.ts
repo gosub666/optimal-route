@@ -12,27 +12,11 @@ export type PlannedStop = {
 };
 
 /**
- * 우선순위 기반 경로 계산
- * 1) 약속시간이 있는 경유지: 약속시간 순서대로 방문 (뼈대, 순서 고정)
- * 2) 약속시간이 없는 일반 경유지: 뼈대 사이에서 이동거리가 가장 적게 늘어나는 위치에 삽입
- *    (자연스럽게 "가장 가까운 약속 위치" 근처에 배치됨)
- * 3) 우편물: 항상 최후순위 — 위 경로가 끝난 뒤, 마지막 지점에서 가장 가까운 순서로 방문
- *
- * ⚠️ 이 알고리즘은 휴리스틱(근사)입니다. 지점 수가 많아질수록 완벽한 최단경로가 아닐 수 있습니다.
- *    거리 계산은 직선거리(Haversine) 기준이며, 실제 도로 거리와는 차이가 있을 수 있습니다.
+ * 삽입 비용이 가장 적은 위치에 지점들을 하나씩 끼워넣는다 (cheapest insertion).
+ * route 배열을 in-place로 변경한다.
  */
-export function planRoute(start: LatLng, points: PlannerPoint[]): PlannedStop[] {
-  const mail = points.filter((p) => p.isMail);
-  const withTime = points
-    .filter((p) => !p.isMail && p.appointmentTime)
-    .sort((a, b) => (a.appointmentTime! < b.appointmentTime! ? -1 : 1));
-  const noTime = points.filter((p) => !p.isMail && !p.appointmentTime);
-
-  // 1) 뼈대: 약속시간 순서 고정
-  const route: PlannerPoint[] = [...withTime];
-
-  // 2) 일반 경유지: cheapest insertion — 삽입 시 늘어나는 거리가 최소인 위치에 끼워넣기
-  const remaining = [...noTime];
+function insertCheapest(start: LatLng, route: PlannerPoint[], candidates: PlannerPoint[]) {
+  const remaining = [...candidates];
   while (remaining.length > 0) {
     let bestIdx = -1;
     let bestPos = -1;
@@ -61,24 +45,35 @@ export function planRoute(start: LatLng, points: PlannerPoint[]): PlannedStop[] 
     const [chosen] = remaining.splice(bestIdx, 1);
     route.splice(bestPos, 0, chosen);
   }
+}
 
-  // 3) 우편물: 최후순위 — 남은 경로 끝에서부터 가장 가까운 순서로 방문
-  const mailRemaining = [...mail];
-  let current: LatLng = route.length > 0 ? route[route.length - 1] : start;
-  while (mailRemaining.length > 0) {
-    let bestIdx = -1;
-    let bestDist = Infinity;
-    for (let i = 0; i < mailRemaining.length; i++) {
-      const d = haversineDistance(current, mailRemaining[i]);
-      if (d < bestDist) {
-        bestDist = d;
-        bestIdx = i;
-      }
-    }
-    const [chosen] = mailRemaining.splice(bestIdx, 1);
-    route.push(chosen);
-    current = chosen;
-  }
+/**
+ * 우선순위 기반 경로 계산
+ * 1) 약속시간이 있는 경유지: 약속시간 순서대로 방문 (뼈대, 순서 고정)
+ * 2) 약속시간이 없는 일반 경유지: 이동거리가 가장 적게 늘어나는 위치에 먼저 끼워넣기 (좋은 자리 우선 선점)
+ * 3) 우편물: 낮은 우선순위 — 일반 경유지가 자리를 잡은 뒤, 남은 기준으로 가장 효율적인 위치에 끼워넣기
+ *    (무조건 맨 뒤가 아니라, 경로상 자연스럽게 지나가는 자리가 있으면 그 자리에 배치됨)
+ *
+ * ⚠️ 이 알고리즘은 휴리스틱(근사)입니다. 지점 수가 많아질수록 완벽한 최단경로가 아닐 수 있습니다.
+ *    거리 계산은 직선거리(Haversine) 기준이며, 실제 도로 거리와는 차이가 있을 수 있습니다.
+ *    약속시간이 있는 경유지 사이에도 다른 지점이 끼어들 수 있어, 이동시간이 길면
+ *    약속시간에 늦을 가능성은 별도로 감안해야 합니다(이 알고리즘은 거리만 고려하고 시간은 계산하지 않습니다).
+ */
+export function planRoute(start: LatLng, points: PlannerPoint[]): PlannedStop[] {
+  const mail = points.filter((p) => p.isMail);
+  const withTime = points
+    .filter((p) => !p.isMail && p.appointmentTime)
+    .sort((a, b) => (a.appointmentTime! < b.appointmentTime! ? -1 : 1));
+  const noTime = points.filter((p) => !p.isMail && !p.appointmentTime);
+
+  // 1) 뼈대: 약속시간 순서 고정
+  const route: PlannerPoint[] = [...withTime];
+
+  // 2) 일반 경유지 먼저 삽입 (가장 좋은 자리 우선 선점)
+  insertCheapest(start, route, noTime);
+
+  // 3) 우편물은 그 다음 삽입 (남은 기준으로 가장 효율적인 자리에 배치, 무조건 맨 뒤가 아님)
+  insertCheapest(start, route, mail);
 
   return route.map((p, idx) => ({ id: p.id, visitOrder: idx }));
 }
