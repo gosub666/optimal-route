@@ -1,22 +1,13 @@
-# 이음국세 (v2 — 로그인 + 팀/팀원 CRUD)
+# 이음국세 — 최단경로 계산기
 
-기존 소스는 폐기하고 새로 시작한 프로젝트의 1단계입니다.
-Next.js (App Router) + TypeScript + Tailwind + Supabase.
+주소 여러 개를 입력하면, 약속시간/우편물 여부 우선순위를 반영해
+출발지로부터의 최단경로를 계산해주는 도구입니다.
 
 ## 시작하기
-
 ```bash
 npm install
 cp .env.local.example .env.local   # 값 채우기
 npm run dev
 ```
 
-## 포함된 기능
-
-- `/login` — 팀원 로그인 (이름 + 전화번호, 별도 인증 없음)
-- `/admin/login` — 관리자 로그인 (ADMIN_PASSWORD 환경변수)
-- `/admin/teams` — 팀 목록/생성/삭제
-- `/admin/teams/[teamId]` — 팀원 목록/추가/수정/삭제
-
-자세한 환경변수 설정, DB 마이그레이션, 다음 단계(경로/지도/도움 등 기존 기능 재구현,
-공유코드 팀 접근 제어)는 `SETUP.md` 참고.
+자세한 설정/우선순위 알고리즘 설명은 `SETUP.md` 참고.
