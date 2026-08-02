@@ -82,11 +82,11 @@ export default function RoutePreviewMap({
 
   if (error) {
     return (
-      <div className="w-full h-40 flex items-center justify-center bg-gray-50 rounded-lg text-xs text-red-500">
+      <div className="w-full h-40 sm:h-56 lg:h-full lg:min-h-[22rem] flex items-center justify-center bg-gray-50 rounded-lg text-xs text-red-500">
         지도 로드 실패: {error}
       </div>
     );
   }
 
-  return <div ref={containerRef} className="w-full h-40 rounded-lg overflow-hidden" />;
+  return <div ref={containerRef} className="w-full h-40 sm:h-56 lg:h-full lg:min-h-[22rem] rounded-lg overflow-hidden" />;
 }

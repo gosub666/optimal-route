@@ -164,49 +164,51 @@ export default function RouteClient({
         {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
         {current ? (
-          <>
-            <RoutePreviewMap
-              start={{ lat: routeView.start.lat, lng: routeView.start.lng }}
-              stops={routeView.stops.map((s) => ({ lat: s.lat, lng: s.lng, visit_order: s.visit_order }))}
-            />
+          <div className="lg:grid lg:grid-cols-5 lg:gap-4 lg:items-start">
+            <div className="lg:col-span-3 space-y-4">
+              <RoutePreviewMap
+                start={{ lat: routeView.start.lat, lng: routeView.start.lng }}
+                stops={routeView.stops.map((s) => ({ lat: s.lat, lng: s.lng, visit_order: s.visit_order }))}
+              />
 
-            <div className="border rounded-2xl p-4 space-y-3">
-              <div>
-                <p className="text-xs text-[#185FA5] font-medium">
-                  현재 목적지 · 경유지 {current.label_no}
-                  {current.appointment_time && (
-                    <span className="ml-2 text-amber-600">⏰ {current.appointment_time}</span>
-                  )}
-                  {current.is_mail && <span className="ml-2 text-gray-400">✉️ 우편물</span>}
-                </p>
-                <p className="text-base font-bold">{current.address}</p>
-              </div>
+              <div className="border rounded-2xl p-4 space-y-3">
+                <div>
+                  <p className="text-xs text-[#185FA5] font-medium">
+                    현재 목적지 · 경유지 {current.label_no}
+                    {current.appointment_time && (
+                      <span className="ml-2 text-amber-600">⏰ {current.appointment_time}</span>
+                    )}
+                    {current.is_mail && <span className="ml-2 text-gray-400">✉️ 우편물</span>}
+                  </p>
+                  <p className="text-base font-bold">{current.address}</p>
+                </div>
 
-              <div className="flex gap-2">
-                <a
-                  href={buildKakaoMapLink(current.address, current.lat, current.lng)}
-                  className="flex-1 text-center bg-[#185FA5] text-white rounded-lg py-2 text-sm"
+                <div className="flex gap-2">
+                  <a
+                    href={buildKakaoMapLink(current.address, current.lat, current.lng)}
+                    className="flex-1 text-center bg-[#185FA5] text-white rounded-lg py-2 text-sm"
+                  >
+                    📍 카카오맵으로 안내
+                  </a>
+                  <a
+                    href={buildTmapLink(current.address, current.lat, current.lng)}
+                    className="flex-1 text-center border border-[#185FA5] text-[#185FA5] rounded-lg py-2 text-sm"
+                  >
+                    🗺️ 티맵으로 안내
+                  </a>
+                </div>
+
+                <button
+                  onClick={() => openVisitModal(current)}
+                  className="w-full bg-[#14532d] text-white rounded-xl py-3 text-sm font-medium"
                 >
-                  📍 카카오맵으로 안내
-                </a>
-                <a
-                  href={buildTmapLink(current.address, current.lat, current.lng)}
-                  className="flex-1 text-center border border-[#185FA5] text-[#185FA5] rounded-lg py-2 text-sm"
-                >
-                  🗺️ 티맵으로 안내
-                </a>
+                  도착 체크 ✓
+                </button>
+                <p className="text-xs text-center text-gray-400">남은 {remaining.length}곳</p>
               </div>
-
-              <button
-                onClick={() => openVisitModal(current)}
-                className="w-full bg-[#14532d] text-white rounded-xl py-3 text-sm font-medium"
-              >
-                도착 체크 ✓
-              </button>
-              <p className="text-xs text-center text-gray-400">남은 {remaining.length}곳</p>
             </div>
 
-            <ul className="divide-y border rounded-xl overflow-hidden">
+            <ul className="lg:col-span-2 mt-4 lg:mt-0 divide-y border rounded-xl overflow-hidden lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
               {routeView.stops.map((s, idx) => (
                 <li
                   key={s.id}
@@ -236,7 +238,7 @@ export default function RouteClient({
                 </li>
               ))}
             </ul>
-          </>
+          </div>
         ) : (
           <p className="text-center text-sm text-gray-400 py-10">모든 경유지를 완료했습니다 🎉</p>
         )}
@@ -267,67 +269,71 @@ export default function RouteClient({
 
       {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
-      <ul className="divide-y border rounded-lg overflow-hidden">
-        {waypoints.map((w) => (
-          <li key={w.id} className="flex items-center gap-3 px-4 py-3">
-            <span className="text-sm text-gray-400 w-5">{w.label_no}</span>
-            <div className="flex-1">
-              <p className={`text-sm ${w.completed ? "line-through text-gray-400" : ""}`}>{w.address}</p>
-              <p className="text-xs text-gray-400">
-                {w.appointment_time && <span className="text-amber-600">⏰ {w.appointment_time} </span>}
-                {w.is_mail && <span>✉️ 우편물</span>}
-              </p>
+      <div className="lg:grid lg:grid-cols-5 lg:gap-4 lg:items-start">
+        <ul className="lg:col-span-3 divide-y border rounded-lg overflow-hidden lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
+          {waypoints.map((w) => (
+            <li key={w.id} className="flex items-center gap-3 px-4 py-3">
+              <span className="text-sm text-gray-400 w-5">{w.label_no}</span>
+              <div className="flex-1">
+                <p className={`text-sm ${w.completed ? "line-through text-gray-400" : ""}`}>{w.address}</p>
+                <p className="text-xs text-gray-400">
+                  {w.appointment_time && <span className="text-amber-600">⏰ {w.appointment_time} </span>}
+                  {w.is_mail && <span>✉️ 우편물</span>}
+                </p>
+              </div>
+              <button onClick={() => runDelete(w.id)} className="text-xs text-red-600" disabled={pending}>
+                삭제
+              </button>
+            </li>
+          ))}
+          {waypoints.length === 0 && (
+            <li className="px-4 py-6 text-center text-sm text-gray-400">등록된 경유지가 없습니다.</li>
+          )}
+        </ul>
+
+        <div className="lg:col-span-2 mt-4 lg:mt-0 space-y-4">
+          <form action={runAddWaypoint} className="space-y-2 border rounded-lg p-3">
+            <input
+              name="address"
+              required
+              placeholder="주소 입력 (예: 서울 관악구 관악로14길 106)"
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1">
+                <label className="text-xs text-gray-500">약속시간</label>
+                <input name="appointmentTime" type="time" className="border rounded-lg px-2 py-1 text-sm" />
+              </div>
+              <label className="flex items-center gap-1 text-xs text-gray-500">
+                <input name="isMail" type="checkbox" />
+                우편물
+              </label>
+              <button
+                disabled={pending}
+                className="ml-auto bg-[#185FA5] text-white rounded-lg px-4 py-2 text-sm disabled:opacity-50"
+              >
+                추가
+              </button>
             </div>
-            <button onClick={() => runDelete(w.id)} className="text-xs text-red-600" disabled={pending}>
-              삭제
-            </button>
-          </li>
-        ))}
-        {waypoints.length === 0 && (
-          <li className="px-4 py-6 text-center text-sm text-gray-400">등록된 경유지가 없습니다.</li>
-        )}
-      </ul>
+          </form>
 
-      <form action={runAddWaypoint} className="space-y-2 border rounded-lg p-3">
-        <input
-          name="address"
-          required
-          placeholder="주소 입력 (예: 서울 관악구 관악로14길 106)"
-          className="w-full border rounded-lg px-3 py-2 text-sm"
-        />
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
-            <label className="text-xs text-gray-500">약속시간</label>
-            <input name="appointmentTime" type="time" className="border rounded-lg px-2 py-1 text-sm" />
-          </div>
-          <label className="flex items-center gap-1 text-xs text-gray-500">
-            <input name="isMail" type="checkbox" />
-            우편물
-          </label>
+          {startAddressBlock}
+
           <button
-            disabled={pending}
-            className="ml-auto bg-[#185FA5] text-white rounded-lg px-4 py-2 text-sm disabled:opacity-50"
+            onClick={runPlanRoute}
+            disabled={pending || waypoints.length === 0}
+            className="w-full bg-[#185FA5] text-white rounded-lg py-3 text-sm font-medium disabled:opacity-50"
           >
-            추가
+            {pending ? "계산 중..." : "최단 경로 계산 →"}
           </button>
+
+          <div className="border rounded-xl p-4 space-y-1 bg-gray-50 text-xs text-gray-600">
+            <p className="font-medium text-gray-700">ℹ️ 경로 계산 우선순위</p>
+            <p>1. 약속시간이 있는 경유지 — 시간 순서대로 방문</p>
+            <p>2. 약속시간이 없는 경유지 — 가까운 약속 위치 근처에 배치</p>
+            <p>3. 우편물 — 낮은 우선순위, 지나가는 길이면 그 자리에 배치</p>
+          </div>
         </div>
-      </form>
-
-      {startAddressBlock}
-
-      <button
-        onClick={runPlanRoute}
-        disabled={pending || waypoints.length === 0}
-        className="w-full bg-[#185FA5] text-white rounded-lg py-3 text-sm font-medium disabled:opacity-50"
-      >
-        {pending ? "계산 중..." : "최단 경로 계산 →"}
-      </button>
-
-      <div className="border rounded-xl p-4 space-y-1 bg-gray-50 text-xs text-gray-600">
-        <p className="font-medium text-gray-700">ℹ️ 경로 계산 우선순위</p>
-        <p>1. 약속시간이 있는 경유지 — 시간 순서대로 방문</p>
-        <p>2. 약속시간이 없는 경유지 — 가까운 약속 위치 근처에 배치</p>
-        <p>3. 우편물 — 항상 마지막에 방문 (가까운 순서로)</p>
       </div>
     </main>
   );
