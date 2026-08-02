@@ -328,18 +328,9 @@ export default function RouteClient({
     <main className="max-w-6xl mx-auto px-4 py-6 space-y-6 pb-24">
       <header className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-[#185FA5]">경로 계획</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">
-            {completedCount} / {waypoints.length}
-          </span>
-          <button
-            onClick={runReset}
-            disabled={pending || waypoints.length === 0}
-            className="text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg px-3 py-1.5 disabled:opacity-30 disabled:hover:bg-red-500"
-          >
-            🗑️ 초기화
-          </button>
-        </div>
+        <span className="text-sm text-gray-500">
+          {completedCount} / {waypoints.length}
+        </span>
       </header>
 
       {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
@@ -404,13 +395,22 @@ export default function RouteClient({
 
           {startAddressBlock}
 
-          <button
-            onClick={runPlanRoute}
-            disabled={pending || waypoints.length === 0}
-            className="w-full bg-[#185FA5] text-white rounded-lg py-3 text-sm font-medium disabled:opacity-50"
-          >
-            {pending ? "계산 중..." : "최단 경로 계산 →"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={runReset}
+              disabled={pending || waypoints.length === 0}
+              className="shrink-0 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg px-4 py-3 disabled:opacity-30 disabled:hover:bg-red-500"
+            >
+              🗑️ 초기화
+            </button>
+            <button
+              onClick={runPlanRoute}
+              disabled={pending || waypoints.length === 0}
+              className="flex-1 bg-[#185FA5] text-white rounded-lg py-3 text-sm font-medium disabled:opacity-50"
+            >
+              {pending ? "계산 중..." : "최단 경로 계산 →"}
+            </button>
+          </div>
 
           <div className="border rounded-xl p-4 space-y-1 bg-gray-50 text-xs text-gray-600">
             <p className="font-medium text-gray-700">ℹ️ 경로 계산 우선순위</p>
